@@ -170,9 +170,12 @@
 - [x] Create comprehensive OpenAPI specification file
 - [x] Document all fintech endpoints with request/response schemas
 - [x] Document all identity verification endpoints
+- [x] Document all customer management endpoints
+- [x] Document all account operation endpoints
+- [x] Document all transaction endpoints
 - [x] Integrate Swagger UI into Express application
 - [x] Test Swagger UI at /api/docs endpoint
-- [x] Verify all endpoints are accessible through Swagger (9 endpoints documented)
+- [x] Verify all endpoints are accessible through Swagger (21 endpoints documented)
 - [x] Add example requests and responses
 - [x] Add authentication/authorization documentation
-- [x] Push Swagger implementation to GitHub
+- [x] Push Swagger implementation to GitHub (commit c1ccd46)
