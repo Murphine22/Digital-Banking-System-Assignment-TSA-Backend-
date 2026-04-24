@@ -179,3 +179,16 @@
 - [x] Add example requests and responses
 - [x] Add authentication/authorization documentation
 - [x] Push Swagger implementation to GitHub (commit c1ccd46)
+
+
+## Phase 16: Postman Collection Generation
+- [ ] Create comprehensive Postman collection from Swagger spec
+- [ ] Add all 21 endpoints with request/response examples
+- [ ] Configure environment variables (baseUrl, token, fintechId, etc.)
+- [ ] Add pre-request scripts for token management
+- [ ] Create test scripts for response validation
+- [ ] Add request body examples for all POST endpoints
+- [ ] Organize endpoints into folders by category
+- [ ] Test collection import and endpoint execution
+- [ ] Generate collection export file
+- [ ] Push Postman collection to GitHub

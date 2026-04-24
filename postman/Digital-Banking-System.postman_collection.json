@@ -1,0 +1,559 @@
+{
+  "info": {
+    "_postman_id": "digital-banking-system-collection",
+    "name": "Digital Banking System API",
+    "description": "Complete Postman collection for Digital Banking System with NIBSS Phoenix API integration. Includes all endpoints for fintech onboarding, identity verification, customer management, account operations, and transactions.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Fintech Management",
+      "item": [
+        {
+          "name": "Onboard Fintech",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Phoenix Bank\",\n  \"email\": \"admin@phoenixbank.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/fintech/onboard",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "fintech", "onboard"]
+            },
+            "description": "Register a new fintech institution with NIBSS Phoenix API"
+          },
+          "response": []
+        },
+        {
+          "name": "Fintech Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"apiKey\": \"{{apiKey}}\",\n  \"apiSecret\": \"{{apiSecret}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/fintech/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "fintech", "login"]
+            },
+            "description": "Authenticate fintech and obtain JWT token"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Fintech Details",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/fintech/{{fintechId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "fintech", "{{fintechId}}"]
+            },
+            "description": "Retrieve fintech institution details"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Identity Verification",
+      "item": [
+        {
+          "name": "Insert BVN",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bvn\": \"12345678901\",\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"dob\": \"1990-01-15\",\n  \"phone\": \"08012345678\",\n  \"fintechId\": \"{{fintechId}}\",\n  \"token\": \"{{token}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/identity/insertBvn",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "identity", "insertBvn"]
+            },
+            "description": "Create a new BVN (Bank Verification Number) record"
+          },
+          "response": []
+        },
+        {
+          "name": "Insert NIN",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nin\": \"12345678901\",\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"dob\": \"1990-01-15\",\n  \"fintechId\": \"{{fintechId}}\",\n  \"token\": \"{{token}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/identity/insertNin",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "identity", "insertNin"]
+            },
+            "description": "Create a new NIN (National Identification Number) record"
+          },
+          "response": []
+        },
+        {
+          "name": "Validate BVN",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bvn\": \"12345678901\",\n  \"token\": \"{{token}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/identity/validateBvn",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "identity", "validateBvn"]
+            },
+            "description": "Validate a BVN through NIBSS API"
+          },
+          "response": []
+        },
+        {
+          "name": "Validate NIN",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nin\": \"12345678901\",\n  \"token\": \"{{token}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/identity/validateNin",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "identity", "validateNin"]
+            },
+            "description": "Validate a NIN through NIBSS API"
+          },
+          "response": []
+        },
+        {
+          "name": "Get BVN Record",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/identity/bvn/12345678901",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "identity", "bvn", "12345678901"]
+            },
+            "description": "Retrieve BVN record by BVN number"
+          },
+          "response": []
+        },
+        {
+          "name": "Get NIN Record",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/identity/nin/12345678901",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "identity", "nin", "12345678901"]
+            },
+            "description": "Retrieve NIN record by NIN number"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Customer Management",
+      "item": [
+        {
+          "name": "Onboard Customer",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"email\": \"john@example.com\",\n  \"phone\": \"08012345678\",\n  \"dob\": \"1990-01-15\",\n  \"kycType\": \"BVN\",\n  \"kycId\": \"12345678901\",\n  \"fintechId\": \"{{fintechId}}\",\n  \"token\": \"{{token}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/customer/onboard",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "customer", "onboard"]
+            },
+            "description": "Create a new customer with KYC verification"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Bank Account",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customerId\": \"{{customerId}}\",\n  \"fintechId\": \"{{fintechId}}\",\n  \"kycType\": \"bvn\",\n  \"kycId\": \"12345678901\",\n  \"dob\": \"1990-01-15\",\n  \"token\": \"{{token}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/customer/account/create",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "customer", "account", "create"]
+            },
+            "description": "Create a bank account for customer (auto-funded with NGN 15,000)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Customer Details",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/customer/{{customerId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "customer", "{{customerId}}"]
+            },
+            "description": "Retrieve customer details including linked account"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Fintech Customers",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/customer/fintech/{{fintechId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "customer", "fintech", "{{fintechId}}"]
+            },
+            "description": "Get all customers for a fintech institution"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Account Operations",
+      "item": [
+        {
+          "name": "Get Account Balance",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"{{token}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/account/1234567890/balance",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "account", "1234567890", "balance"]
+            },
+            "description": "Retrieve real-time account balance"
+          },
+          "response": []
+        },
+        {
+          "name": "Name Enquiry",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"{{token}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/account/1234567890/name-enquiry",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "account", "1234567890", "name-enquiry"]
+            },
+            "description": "Perform name enquiry on account before transfer"
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Accounts",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fintechId\": \"{{fintechId}}\",\n  \"token\": \"{{token}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/account",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "account"]
+            },
+            "description": "Get all accounts for a fintech institution"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Account Details",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/account/details/{{accountId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "account", "details", "{{accountId}}"]
+            },
+            "description": "Get detailed information about a specific account"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Transactions",
+      "item": [
+        {
+          "name": "Initiate Transfer",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fromAccountNumber\": \"1234567890\",\n  \"toAccountNumber\": \"0987654321\",\n  \"amount\": 5000,\n  \"fintechId\": \"{{fintechId}}\",\n  \"token\": \"{{token}}\",\n  \"description\": \"Payment for services\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/transaction/transfer",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "transaction", "transfer"]
+            },
+            "description": "Initiate intra-bank or inter-bank fund transfer"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Transaction Status (TSQ)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"{{token}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/transaction/{{transactionId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "transaction", "{{transactionId}}"]
+            },
+            "description": "Query transaction status through NIBSS TSQ"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Account Transaction History",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/transaction/account/{{accountId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "transaction", "account", "{{accountId}}"]
+            },
+            "description": "Get transaction history for a specific account (with privacy controls)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Fintech Transactions",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/transaction/fintech/{{fintechId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "transaction", "fintech", "{{fintechId}}"]
+            },
+            "description": "Get all transactions for a fintech institution"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "System",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["health"]
+            },
+            "description": "Check if the API is running"
+          },
+          "response": []
+        },
+        {
+          "name": "API Info",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/",
+              "host": ["{{baseUrl}}"],
+              "path": [""]
+            },
+            "description": "Get API information and available endpoints"
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "fintechId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "customerId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "accountId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "transactionId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "apiKey",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "apiSecret",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}
