@@ -11,8 +11,30 @@ import { v4 as uuidv4 } from 'uuid';
 const router = express.Router();
 
 /**
- * POST /api/customer/onboard
- * Create customer with KYC verification
+ * @swagger
+ * /api/customer/onboard:
+ *   post:
+ *     summary: Create customer with KYC verification
+ *     tags:
+ *       - Customer Management
+ *     description: Onboard a new customer with KYC details. Requires verified BVN or NIN before account creation.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/CustomerOnboardRequest'
+ *     responses:
+ *       201:
+ *         description: Customer created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/CustomerOnboardResponse'
+ *       400:
+ *         description: Validation error or KYC not verified
+ *       500:
+ *         description: Server error
  */
 router.post('/onboard', [
   body('firstName').notEmpty().withMessage('First name is required'),
@@ -28,7 +50,6 @@ router.post('/onboard', [
   try {
     const { firstName, lastName, email, phone, dob, kycType, kycId, fintechId, token } = req.body;
 
-    // Check if customer already exists
     const existingCustomer = await Customer.findOne({ email });
     if (existingCustomer) {
       return res.status(400).json({
@@ -37,7 +58,6 @@ router.post('/onboard', [
       });
     }
 
-    // Validate identity
     let identityValid = false;
     if (kycType === 'BVN') {
       const bvnRecord = await BVN.findOne({ bvn: kycId });
@@ -54,7 +74,6 @@ router.post('/onboard', [
       });
     }
 
-    // Create customer
     const customer = new Customer({
       firstName,
       lastName,
@@ -92,8 +111,32 @@ router.post('/onboard', [
 });
 
 /**
- * POST /api/customer/account/create
- * Create bank account for customer
+ * @swagger
+ * /api/customer/account/create:
+ *   post:
+ *     summary: Create bank account for customer
+ *     tags:
+ *       - Customer Management
+ *     description: Create a new bank account for a verified customer. Account is auto-funded with NGN 15,000.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/CreateAccountRequest'
+ *     responses:
+ *       201:
+ *         description: Bank account created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/CreateAccountResponse'
+ *       400:
+ *         description: Validation error or customer already has account
+ *       404:
+ *         description: Customer not found
+ *       500:
+ *         description: Server error
  */
 router.post('/account/create', [
   body('customerId').notEmpty().withMessage('Customer ID is required'),
@@ -106,7 +149,6 @@ router.post('/account/create', [
   try {
     const { customerId, fintechId, kycType, kycId, dob, token } = req.body;
 
-    // Get customer
     const customer = await Customer.findById(customerId);
     if (!customer) {
       return res.status(404).json({
@@ -115,7 +157,6 @@ router.post('/account/create', [
       });
     }
 
-    // Check if customer already has an account
     const existingAccount = await BankAccount.findOne({ customerId });
     if (existingAccount) {
       return res.status(400).json({
@@ -124,10 +165,8 @@ router.post('/account/create', [
       });
     }
 
-    // Call NIBSS API to create account
     const nibssResponse = await nibssService.createAccount(kycType, kycId, dob, token);
 
-    // Create bank account record
     const bankAccount = new BankAccount({
       accountNumber: nibssResponse.accountNumber,
       accountName: `${customer.firstName} ${customer.lastName}`,
@@ -135,7 +174,7 @@ router.post('/account/create', [
       fintechId,
       kycType: kycType.toUpperCase(),
       kycId,
-      balance: 15000, // NGN 15,000 initial balance
+      balance: 15000,
       bankCode: nibssResponse.bankCode,
       bankName: nibssResponse.bankName,
       status: 'ACTIVE',
@@ -144,7 +183,6 @@ router.post('/account/create', [
 
     await bankAccount.save();
 
-    // Update customer with account reference
     customer.accountId = bankAccount._id;
     await customer.save();
 
@@ -172,8 +210,27 @@ router.post('/account/create', [
 });
 
 /**
- * GET /api/customer/:customerId
- * Get customer details
+ * @swagger
+ * /api/customer/{customerId}:
+ *   get:
+ *     summary: Get customer details
+ *     tags:
+ *       - Customer Management
+ *     description: Retrieve details of a specific customer by ID, including linked account information.
+ *     parameters:
+ *       - in: path
+ *         name: customerId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: MongoDB ObjectId of the customer
+ *     responses:
+ *       200:
+ *         description: Customer details retrieved successfully
+ *       404:
+ *         description: Customer not found
+ *       500:
+ *         description: Server error
  */
 router.get('/:customerId', async (req, res) => {
   try {
@@ -201,8 +258,25 @@ router.get('/:customerId', async (req, res) => {
 });
 
 /**
- * GET /api/customer/fintech/:fintechId
- * Get all customers for a fintech
+ * @swagger
+ * /api/customer/fintech/{fintechId}:
+ *   get:
+ *     summary: Get all customers for a fintech
+ *     tags:
+ *       - Customer Management
+ *     description: Retrieve all customers registered with a specific fintech institution.
+ *     parameters:
+ *       - in: path
+ *         name: fintechId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: MongoDB ObjectId of the fintech institution
+ *     responses:
+ *       200:
+ *         description: Customers retrieved successfully
+ *       500:
+ *         description: Server error
  */
 router.get('/fintech/:fintechId', async (req, res) => {
   try {

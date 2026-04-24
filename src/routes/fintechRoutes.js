@@ -8,8 +8,30 @@ import { body } from 'express-validator';
 const router = express.Router();
 
 /**
- * POST /api/fintech/onboard
- * Register a fintech institution with NIBSS
+ * @swagger
+ * /api/fintech/onboard:
+ *   post:
+ *     summary: Register a fintech institution with NIBSS
+ *     tags:
+ *       - Fintech Management
+ *     description: Onboard a new fintech institution with the NIBSS Phoenix API. Returns API credentials for authentication.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/FintechOnboardRequest'
+ *     responses:
+ *       201:
+ *         description: Fintech registered successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/FintechOnboardResponse'
+ *       400:
+ *         description: Validation error or fintech already registered
+ *       500:
+ *         description: Server error
  */
 router.post('/onboard', [
   body('name').notEmpty().withMessage('Fintech name is required'),
@@ -18,7 +40,6 @@ router.post('/onboard', [
   try {
     const { name, email } = req.body;
 
-    // Check if fintech already exists
     const existingFintech = await Fintech.findOne({ email });
     if (existingFintech) {
       return res.status(400).json({
@@ -27,10 +48,8 @@ router.post('/onboard', [
       });
     }
 
-    // Call NIBSS onboarding API
     const nibssResponse = await nibssService.onboardFintech(name, email);
 
-    // Store fintech credentials in database
     const fintech = new Fintech({
       name,
       email,
@@ -66,8 +85,30 @@ router.post('/onboard', [
 });
 
 /**
- * POST /api/fintech/login
- * Authenticate fintech and get JWT token
+ * @swagger
+ * /api/fintech/login:
+ *   post:
+ *     summary: Authenticate fintech and get JWT token
+ *     tags:
+ *       - Fintech Management
+ *     description: Login with fintech API credentials to obtain a JWT token for subsequent API requests.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/FintechLoginRequest'
+ *     responses:
+ *       200:
+ *         description: Login successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/FintechLoginResponse'
+ *       401:
+ *         description: Invalid credentials
+ *       500:
+ *         description: Server error
  */
 router.post('/login', [
   body('apiKey').notEmpty().withMessage('API key is required'),
@@ -76,7 +117,6 @@ router.post('/login', [
   try {
     const { apiKey, apiSecret } = req.body;
 
-    // Find fintech by API credentials
     const fintech = await Fintech.findOne({ apiKey, apiSecret });
     if (!fintech) {
       return res.status(401).json({
@@ -85,12 +125,10 @@ router.post('/login', [
       });
     }
 
-    // Call NIBSS login API
     const loginResponse = await nibssService.login(apiKey, apiSecret);
 
-    // Update fintech token
     fintech.jwtToken = loginResponse.token;
-    fintech.tokenExpiresAt = new Date(Date.now() + 3600000); // 1 hour
+    fintech.tokenExpiresAt = new Date(Date.now() + 3600000);
     fintech.lastLoginAt = new Date();
     await fintech.save();
 
@@ -119,8 +157,27 @@ router.post('/login', [
 });
 
 /**
- * GET /api/fintech/:fintechId
- * Get fintech details
+ * @swagger
+ * /api/fintech/{fintechId}:
+ *   get:
+ *     summary: Get fintech institution details
+ *     tags:
+ *       - Fintech Management
+ *     description: Retrieve details of a registered fintech institution by ID.
+ *     parameters:
+ *       - in: path
+ *         name: fintechId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: MongoDB ObjectId of the fintech institution
+ *     responses:
+ *       200:
+ *         description: Fintech details retrieved successfully
+ *       404:
+ *         description: Fintech not found
+ *       500:
+ *         description: Server error
  */
 router.get('/:fintechId', async (req, res) => {
   try {

@@ -10,8 +10,30 @@ import { authMiddleware } from '../middleware/auth.js';
 const router = express.Router();
 
 /**
- * POST /api/identity/insertBvn
- * Insert BVN record
+ * @swagger
+ * /api/identity/insertBvn:
+ *   post:
+ *     summary: Insert BVN record
+ *     tags:
+ *       - Identity Verification
+ *     description: Create a new BVN (Bank Verification Number) record through NIBSS API and store locally.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/InsertBvnRequest'
+ *     responses:
+ *       201:
+ *         description: BVN record created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/InsertBvnResponse'
+ *       400:
+ *         description: Validation error or BVN already registered
+ *       500:
+ *         description: Server error
  */
 router.post('/insertBvn', [
   body('bvn').isLength({ min: 11, max: 11 }).withMessage('BVN must be 11 digits'),
@@ -25,7 +47,6 @@ router.post('/insertBvn', [
   try {
     const { bvn, firstName, lastName, dob, phone, fintechId, token } = req.body;
 
-    // Check if BVN already exists
     const existingBvn = await BVN.findOne({ bvn });
     if (existingBvn) {
       return res.status(400).json({
@@ -34,10 +55,8 @@ router.post('/insertBvn', [
       });
     }
 
-    // Call NIBSS API to insert BVN
     const nibssResponse = await nibssService.insertBvn(bvn, firstName, lastName, dob, phone, token);
 
-    // Store BVN record locally
     const bvnRecord = new BVN({
       bvn,
       firstName,
@@ -73,8 +92,26 @@ router.post('/insertBvn', [
 });
 
 /**
- * POST /api/identity/insertNin
- * Insert NIN record
+ * @swagger
+ * /api/identity/insertNin:
+ *   post:
+ *     summary: Insert NIN record
+ *     tags:
+ *       - Identity Verification
+ *     description: Create a new NIN (National Identification Number) record through NIBSS API and store locally.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/InsertNinRequest'
+ *     responses:
+ *       201:
+ *         description: NIN record created successfully
+ *       400:
+ *         description: Validation error or NIN already registered
+ *       500:
+ *         description: Server error
  */
 router.post('/insertNin', [
   body('nin').isLength({ min: 11, max: 11 }).withMessage('NIN must be 11 digits'),
@@ -87,7 +124,6 @@ router.post('/insertNin', [
   try {
     const { nin, firstName, lastName, dob, fintechId, token } = req.body;
 
-    // Check if NIN already exists
     const existingNin = await NIN.findOne({ nin });
     if (existingNin) {
       return res.status(400).json({
@@ -96,10 +132,8 @@ router.post('/insertNin', [
       });
     }
 
-    // Call NIBSS API to insert NIN
     const nibssResponse = await nibssService.insertNin(nin, firstName, lastName, dob, token);
 
-    // Store NIN record locally
     const ninRecord = new NIN({
       nin,
       firstName,
@@ -134,8 +168,34 @@ router.post('/insertNin', [
 });
 
 /**
- * POST /api/identity/validateBvn
- * Validate BVN
+ * @swagger
+ * /api/identity/validateBvn:
+ *   post:
+ *     summary: Validate BVN
+ *     tags:
+ *       - Identity Verification
+ *     description: Validate a BVN through NIBSS API to verify identity.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [bvn, token]
+ *             properties:
+ *               bvn:
+ *                 type: string
+ *                 minLength: 11
+ *                 maxLength: 11
+ *               token:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: BVN validation successful
+ *       400:
+ *         description: BVN validation failed
+ *       500:
+ *         description: Server error
  */
 router.post('/validateBvn', [
   body('bvn').isLength({ min: 11, max: 11 }).withMessage('BVN must be 11 digits'),
@@ -144,10 +204,7 @@ router.post('/validateBvn', [
   try {
     const { bvn, token } = req.body;
 
-    // Call NIBSS API to validate BVN
     const nibssResponse = await nibssService.validateBvn(bvn, token);
-
-    // Check local database
     const bvnRecord = await BVN.findOne({ bvn });
 
     res.status(200).json({
@@ -172,8 +229,34 @@ router.post('/validateBvn', [
 });
 
 /**
- * POST /api/identity/validateNin
- * Validate NIN
+ * @swagger
+ * /api/identity/validateNin:
+ *   post:
+ *     summary: Validate NIN
+ *     tags:
+ *       - Identity Verification
+ *     description: Validate a NIN through NIBSS API to verify identity.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [nin, token]
+ *             properties:
+ *               nin:
+ *                 type: string
+ *                 minLength: 11
+ *                 maxLength: 11
+ *               token:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: NIN validation successful
+ *       400:
+ *         description: NIN validation failed
+ *       500:
+ *         description: Server error
  */
 router.post('/validateNin', [
   body('nin').isLength({ min: 11, max: 11 }).withMessage('NIN must be 11 digits'),
@@ -182,10 +265,7 @@ router.post('/validateNin', [
   try {
     const { nin, token } = req.body;
 
-    // Call NIBSS API to validate NIN
     const nibssResponse = await nibssService.validateNin(nin, token);
-
-    // Check local database
     const ninRecord = await NIN.findOne({ nin });
 
     res.status(200).json({
@@ -210,8 +290,23 @@ router.post('/validateNin', [
 });
 
 /**
- * GET /api/identity/bvn/:bvn
- * Get BVN record
+ * @swagger
+ * /api/identity/bvn/{bvn}:
+ *   get:
+ *     summary: Get BVN record
+ *     tags:
+ *       - Identity Verification
+ *     parameters:
+ *       - in: path
+ *         name: bvn
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: BVN record retrieved
+ *       404:
+ *         description: BVN not found
  */
 router.get('/bvn/:bvn', async (req, res) => {
   try {
@@ -236,8 +331,23 @@ router.get('/bvn/:bvn', async (req, res) => {
 });
 
 /**
- * GET /api/identity/nin/:nin
- * Get NIN record
+ * @swagger
+ * /api/identity/nin/{nin}:
+ *   get:
+ *     summary: Get NIN record
+ *     tags:
+ *       - Identity Verification
+ *     parameters:
+ *       - in: path
+ *         name: nin
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: NIN record retrieved
+ *       404:
+ *         description: NIN not found
  */
 router.get('/nin/:nin', async (req, res) => {
   try {

@@ -163,3 +163,16 @@
 - API endpoint documentation
 - Environment setup guide
 - Deployment instructions
+
+
+## Phase 15: Swagger/OpenAPI Documentation
+- [x] Install swagger-ui-express and swagger-jsdoc dependencies
+- [x] Create comprehensive OpenAPI specification file
+- [x] Document all fintech endpoints with request/response schemas
+- [x] Document all identity verification endpoints
+- [x] Integrate Swagger UI into Express application
+- [x] Test Swagger UI at /api/docs endpoint
+- [x] Verify all endpoints are accessible through Swagger (9 endpoints documented)
+- [x] Add example requests and responses
+- [x] Add authentication/authorization documentation
+- [x] Push Swagger implementation to GitHub

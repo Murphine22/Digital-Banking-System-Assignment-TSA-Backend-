@@ -2,6 +2,8 @@ import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import swaggerUi from 'swagger-ui-express';
+import swaggerSpecs from './config/swagger.js';
 
 // Load environment variables
 dotenv.config();
@@ -51,6 +53,20 @@ const connectDB = async () => {
 // Connect to MongoDB
 connectDB();
 
+// Swagger UI
+app.use('/api/docs', swaggerUi.serve);
+app.get('/api/docs', swaggerUi.setup(swaggerSpecs, {
+  swaggerOptions: {
+    url: '/api/swagger.json'
+  }
+}));
+
+// Swagger JSON
+app.get('/api/swagger.json', (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  res.send(swaggerSpecs);
+});
+
 // Health check endpoint
 app.get('/health', (req, res) => {
   res.status(200).json({
@@ -74,13 +90,16 @@ app.get('/', (req, res) => {
     success: true,
     message: 'Digital Banking System API',
     version: '1.0.0',
+    documentation: 'http://localhost:3000/api/docs',
     endpoints: {
       fintech: '/api/fintech',
       identity: '/api/identity',
       customer: '/api/customer',
       account: '/api/account',
       transaction: '/api/transaction',
-      health: '/health'
+      health: '/health',
+      swagger: '/api/docs',
+      swaggerJson: '/api/swagger.json'
     }
   });
 });

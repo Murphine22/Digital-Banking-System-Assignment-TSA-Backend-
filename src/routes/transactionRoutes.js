@@ -9,8 +9,32 @@ import { validateRequest } from '../middleware/validation.js';
 const router = express.Router();
 
 /**
- * POST /api/transfer
- * Initiate fund transfer (intra-bank or inter-bank)
+ * @swagger
+ * /api/transaction/transfer:
+ *   post:
+ *     summary: Initiate fund transfer
+ *     tags:
+ *       - Transactions
+ *     description: Initiate intra-bank or inter-bank fund transfer with mandatory name enquiry and identity validation.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/TransferRequest'
+ *     responses:
+ *       201:
+ *         description: Transfer initiated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/TransferResponse'
+ *       400:
+ *         description: Validation error or transfer failed
+ *       404:
+ *         description: Account not found
+ *       500:
+ *         description: Server error
  */
 router.post('/transfer', [
   body('fromAccountNumber').notEmpty().withMessage('From account number is required'),
@@ -124,8 +148,38 @@ router.post('/transfer', [
 });
 
 /**
- * GET /api/transaction/:transactionId
- * Get transaction status (TSQ - Transaction Status Query)
+ * @swagger
+ * /api/transaction/{transactionId}:
+ *   get:
+ *     summary: Get transaction status (TSQ)
+ *     tags:
+ *       - Transactions
+ *     description: Query the status of a specific transaction by its ID through NIBSS Transaction Status Query (TSQ).
+ *     parameters:
+ *       - in: path
+ *         name: transactionId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Transaction ID to query
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [token]
+ *             properties:
+ *               token:
+ *                 type: string
+ *                 description: NIBSS JWT token
+ *     responses:
+ *       200:
+ *         description: Transaction status retrieved successfully
+ *       404:
+ *         description: Transaction not found
+ *       400:
+ *         description: TSQ failed
  */
 router.get('/:transactionId', [
   param('transactionId').notEmpty().withMessage('Transaction ID is required'),
@@ -194,8 +248,27 @@ router.get('/:transactionId', [
 });
 
 /**
- * GET /api/transactions/account/:accountId
- * Get transaction history for an account (with privacy controls)
+ * @swagger
+ * /api/transaction/account/{accountId}:
+ *   get:
+ *     summary: Get transaction history for account
+ *     tags:
+ *       - Transactions
+ *     description: Retrieve transaction history for a specific account with strict data privacy controls. Only transactions involving this account are returned.
+ *     parameters:
+ *       - in: path
+ *         name: accountId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: MongoDB ObjectId of the account
+ *     responses:
+ *       200:
+ *         description: Transaction history retrieved successfully
+ *       404:
+ *         description: Account not found
+ *       500:
+ *         description: Server error
  */
 router.get('/account/:accountId', async (req, res) => {
   try {
@@ -251,8 +324,25 @@ router.get('/account/:accountId', async (req, res) => {
 });
 
 /**
- * GET /api/transactions/fintech/:fintechId
- * Get all transactions for a fintech
+ * @swagger
+ * /api/transaction/fintech/{fintechId}:
+ *   get:
+ *     summary: Get all transactions for fintech
+ *     tags:
+ *       - Transactions
+ *     description: Retrieve all transactions for a fintech institution with pagination and optional status filtering.
+ *     parameters:
+ *       - in: path
+ *         name: fintechId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: MongoDB ObjectId of the fintech
+ *     responses:
+ *       200:
+ *         description: Transactions retrieved successfully
+ *       500:
+ *         description: Server error
  */
 router.get('/fintech/:fintechId', async (req, res) => {
   try {

@@ -7,8 +7,38 @@ import { validateRequest } from '../middleware/validation.js';
 const router = express.Router();
 
 /**
- * GET /api/account/:accountNumber/balance
- * Get account balance
+ * @swagger
+ * /api/account/{accountNumber}/balance:
+ *   get:
+ *     summary: Get account balance
+ *     tags:
+ *       - Account Operations
+ *     description: Retrieve real-time account balance from NIBSS API.
+ *     parameters:
+ *       - in: path
+ *         name: accountNumber
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Bank account number
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [token]
+ *             properties:
+ *               token:
+ *                 type: string
+ *                 description: NIBSS JWT token
+ *     responses:
+ *       200:
+ *         description: Balance retrieved successfully
+ *       404:
+ *         description: Account not found
+ *       400:
+ *         description: Balance retrieval failed
  */
 router.get('/:accountNumber/balance', [
   param('accountNumber').notEmpty().withMessage('Account number is required'),
@@ -18,7 +48,6 @@ router.get('/:accountNumber/balance', [
     const { accountNumber } = req.params;
     const { token } = req.body;
 
-    // Get account from local database
     const account = await BankAccount.findOne({ accountNumber });
     if (!account) {
       return res.status(404).json({
@@ -27,7 +56,6 @@ router.get('/:accountNumber/balance', [
       });
     }
 
-    // Call NIBSS API for real-time balance
     const nibssResponse = await nibssService.getBalance(accountNumber, token);
 
     res.status(200).json({
@@ -50,8 +78,38 @@ router.get('/:accountNumber/balance', [
 });
 
 /**
- * GET /api/account/:accountNumber/name-enquiry
- * Perform name enquiry on account
+ * @swagger
+ * /api/account/{accountNumber}/name-enquiry:
+ *   get:
+ *     summary: Perform name enquiry on account
+ *     tags:
+ *       - Account Operations
+ *     description: Resolve an account number to the account holder's name through NIBSS API.
+ *     parameters:
+ *       - in: path
+ *         name: accountNumber
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Bank account number to enquire
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [token]
+ *             properties:
+ *               token:
+ *                 type: string
+ *                 description: NIBSS JWT token
+ *     responses:
+ *       200:
+ *         description: Name enquiry successful
+ *       404:
+ *         description: Account not found
+ *       400:
+ *         description: Name enquiry failed
  */
 router.get('/:accountNumber/name-enquiry', [
   param('accountNumber').notEmpty().withMessage('Account number is required'),
@@ -61,7 +119,6 @@ router.get('/:accountNumber/name-enquiry', [
     const { accountNumber } = req.params;
     const { token } = req.body;
 
-    // Get account from local database
     const account = await BankAccount.findOne({ accountNumber });
     if (!account) {
       return res.status(404).json({
@@ -70,7 +127,6 @@ router.get('/:accountNumber/name-enquiry', [
       });
     }
 
-    // Call NIBSS API for name enquiry
     const nibssResponse = await nibssService.nameEnquiry(accountNumber, token);
 
     res.status(200).json({
@@ -93,8 +149,32 @@ router.get('/:accountNumber/name-enquiry', [
 });
 
 /**
- * GET /api/accounts
- * Get all accounts for a fintech
+ * @swagger
+ * /api/account:
+ *   get:
+ *     summary: Get all accounts for a fintech
+ *     tags:
+ *       - Account Operations
+ *     description: Retrieve all bank accounts registered with a fintech institution.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [fintechId, token]
+ *             properties:
+ *               fintechId:
+ *                 type: string
+ *                 description: MongoDB ObjectId of fintech
+ *               token:
+ *                 type: string
+ *                 description: NIBSS JWT token
+ *     responses:
+ *       200:
+ *         description: Accounts retrieved successfully
+ *       500:
+ *         description: Server error
  */
 router.get('/', [
   body('fintechId').notEmpty().withMessage('Fintech ID is required'),
@@ -103,12 +183,10 @@ router.get('/', [
   try {
     const { fintechId, token } = req.body;
 
-    // Get accounts from local database
     const accounts = await BankAccount.find({ fintechId })
       .populate('customerId', 'firstName lastName email')
       .sort({ createdAt: -1 });
 
-    // Call NIBSS API for all accounts
     let nibssAccounts = [];
     try {
       const nibssResponse = await nibssService.getAllAccounts(token);
@@ -136,8 +214,27 @@ router.get('/', [
 });
 
 /**
- * GET /api/account/:accountId
- * Get account details by ID
+ * @swagger
+ * /api/account/details/{accountId}:
+ *   get:
+ *     summary: Get account details by ID
+ *     tags:
+ *       - Account Operations
+ *     description: Retrieve detailed information about a specific bank account.
+ *     parameters:
+ *       - in: path
+ *         name: accountId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: MongoDB ObjectId of the account
+ *     responses:
+ *       200:
+ *         description: Account details retrieved successfully
+ *       404:
+ *         description: Account not found
+ *       500:
+ *         description: Server error
  */
 router.get('/details/:accountId', async (req, res) => {
   try {
