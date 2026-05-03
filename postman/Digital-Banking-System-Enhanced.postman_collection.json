@@ -1,0 +1,605 @@
+{
+  "info": {
+    "_postman_id": "digital-banking-system-enhanced",
+    "name": "Digital Banking System API - Enhanced",
+    "description": "Enhanced Postman collection with pre-request scripts for token management and test scripts for response validation",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Fintech Management",
+      "item": [
+        {
+          "name": "Onboard Fintech",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 201', function() {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('Response has success flag', function() {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "});",
+                  "",
+                  "pm.test('Response contains apiKey and apiSecret', function() {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.data).to.have.property('apiKey');",
+                  "    pm.expect(jsonData.data).to.have.property('apiSecret');",
+                  "});",
+                  "",
+                  "if (pm.response.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.environment.set('apiKey', jsonData.data.apiKey);",
+                  "    pm.environment.set('apiSecret', jsonData.data.apiSecret);",
+                  "    pm.environment.set('fintechId', jsonData.data.fintechId);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Phoenix Bank\",\n  \"email\": \"admin@phoenixbank.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/fintech/onboard",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "fintech", "onboard"]
+            },
+            "description": "Register a new fintech institution with NIBSS Phoenix API"
+          },
+          "response": []
+        },
+        {
+          "name": "Fintech Login",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Pre-request script to prepare credentials",
+                  "if (!pm.environment.get('apiKey')) {",
+                  "    console.log('Warning: apiKey not set. Please run Onboard Fintech first.');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response has JWT token', function() {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "    pm.expect(jsonData.data).to.have.property('token');",
+                  "});",
+                  "",
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.environment.set('token', jsonData.data.token);",
+                  "    pm.environment.set('tokenExpiry', jsonData.data.expiresIn);",
+                  "    console.log('✓ JWT Token stored: ' + jsonData.data.token.substring(0, 20) + '...');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"apiKey\": \"{{apiKey}}\",\n  \"apiSecret\": \"{{apiSecret}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/fintech/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "fintech", "login"]
+            },
+            "description": "Authenticate fintech and obtain JWT token"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Fintech Details",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response contains fintech details', function() {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "    pm.expect(jsonData.data).to.have.property('name');",
+                  "    pm.expect(jsonData.data).to.have.property('email');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/fintech/{{fintechId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "fintech", "{{fintechId}}"]
+            },
+            "description": "Retrieve fintech institution details"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Identity Verification",
+      "item": [
+        {
+          "name": "Insert BVN",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 201', function() {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('BVN record created successfully', function() {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "    pm.expect(jsonData.data).to.have.property('bvn');",
+                  "});",
+                  "",
+                  "if (pm.response.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.environment.set('bvn', jsonData.data.bvn);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bvn\": \"12345678901\",\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"dob\": \"1990-01-15\",\n  \"phone\": \"08012345678\",\n  \"fintechId\": \"{{fintechId}}\",\n  \"token\": \"{{token}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/identity/insertBvn",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "identity", "insertBvn"]
+            },
+            "description": "Create a new BVN (Bank Verification Number) record"
+          },
+          "response": []
+        },
+        {
+          "name": "Validate BVN",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('BVN validation successful', function() {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "    pm.expect(jsonData.data).to.have.property('valid');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bvn\": \"{{bvn}}\",\n  \"token\": \"{{token}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/identity/validateBvn",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "identity", "validateBvn"]
+            },
+            "description": "Validate a BVN through NIBSS API"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Customer Management",
+      "item": [
+        {
+          "name": "Onboard Customer",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 201', function() {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('Customer created successfully', function() {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "    pm.expect(jsonData.data).to.have.property('customerId');",
+                  "});",
+                  "",
+                  "if (pm.response.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.environment.set('customerId', jsonData.data.customerId);",
+                  "    console.log('✓ Customer ID stored: ' + jsonData.data.customerId);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"email\": \"john@example.com\",\n  \"phone\": \"08012345678\",\n  \"dob\": \"1990-01-15\",\n  \"kycType\": \"BVN\",\n  \"kycId\": \"12345678901\",\n  \"fintechId\": \"{{fintechId}}\",\n  \"token\": \"{{token}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/customer/onboard",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "customer", "onboard"]
+            },
+            "description": "Create a new customer with KYC verification"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Bank Account",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 201', function() {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('Account created with NGN 15,000 funding', function() {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "    pm.expect(jsonData.data).to.have.property('accountNumber');",
+                  "    pm.expect(jsonData.data.balance).to.equal(15000);",
+                  "});",
+                  "",
+                  "if (pm.response.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.environment.set('accountNumber', jsonData.data.accountNumber);",
+                  "    pm.environment.set('accountId', jsonData.data.accountId);",
+                  "    console.log('✓ Account created: ' + jsonData.data.accountNumber);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customerId\": \"{{customerId}}\",\n  \"fintechId\": \"{{fintechId}}\",\n  \"kycType\": \"bvn\",\n  \"kycId\": \"12345678901\",\n  \"dob\": \"1990-01-15\",\n  \"token\": \"{{token}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/customer/account/create",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "customer", "account", "create"]
+            },
+            "description": "Create a bank account for customer (auto-funded with NGN 15,000)"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Account Operations",
+      "item": [
+        {
+          "name": "Get Account Balance",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Balance retrieved successfully', function() {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "    pm.expect(jsonData.data).to.have.property('balance');",
+                  "    pm.expect(jsonData.data.balance).to.be.a('number');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"{{token}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/account/{{accountNumber}}/balance",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "account", "{{accountNumber}}", "balance"]
+            },
+            "description": "Retrieve real-time account balance"
+          },
+          "response": []
+        },
+        {
+          "name": "Name Enquiry",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Name enquiry successful', function() {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "    pm.expect(jsonData.data).to.have.property('accountName');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"{{token}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/account/{{accountNumber}}/name-enquiry",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "account", "{{accountNumber}}", "name-enquiry"]
+            },
+            "description": "Perform name enquiry on account before transfer"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Transactions",
+      "item": [
+        {
+          "name": "Initiate Transfer",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 201', function() {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('Transfer initiated successfully', function() {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "    pm.expect(jsonData.data).to.have.property('transactionId');",
+                  "    pm.expect(jsonData.data).to.have.property('status');",
+                  "});",
+                  "",
+                  "if (pm.response.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.environment.set('transactionId', jsonData.data.transactionId);",
+                  "    console.log('✓ Transfer initiated: ' + jsonData.data.transactionId);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fromAccountNumber\": \"{{accountNumber}}\",\n  \"toAccountNumber\": \"0987654321\",\n  \"amount\": 5000,\n  \"fintechId\": \"{{fintechId}}\",\n  \"token\": \"{{token}}\",\n  \"description\": \"Payment for services\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/transaction/transfer",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "transaction", "transfer"]
+            },
+            "description": "Initiate intra-bank or inter-bank fund transfer"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Transaction Status (TSQ)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Transaction status retrieved', function() {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "    pm.expect(jsonData.data).to.have.property('status');",
+                  "    pm.expect(['PENDING', 'COMPLETED', 'FAILED']).to.include(jsonData.data.status);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"{{token}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/transaction/{{transactionId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "transaction", "{{transactionId}}"]
+            },
+            "description": "Query transaction status through NIBSS TSQ"
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "fintechId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "customerId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "accountId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "accountNumber",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "transactionId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "apiKey",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "apiSecret",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "bvn",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}
